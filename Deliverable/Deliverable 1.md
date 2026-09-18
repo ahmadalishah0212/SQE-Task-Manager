@@ -8,7 +8,7 @@
 | Approximate Python LOC | 1200 |
 | Number of Python Files | 13 |
 | Existing Tests | Yes  |
-| Initial Pylint Score | 7.02 |
+| Initial Pylint Score | 6.44 |
 | Why is this project suitable? | The project is primarily written in Python and provides an understandable task-management domain. It contains multiple Python source files, functions/classes, and sufficient code for meaningful static code quality analysis using Pylint. The project can be analyzed to identify code-quality issues and track improvements through static analysis. |
 
 ## Final Selection Checklist
