@@ -16,6 +16,10 @@ from config.settings import Settings
 logger = logging.getLogger("TaskManager.DataExport")
 
 
+class DataTransferError(Exception):
+    """Raised when task data cannot be exported, imported, or restored."""
+
+
 class DataExporter:
     """Handle data export/import operations."""
     
@@ -49,9 +53,9 @@ class DataExporter:
             
             logger.info(f"Exported {len(tasks)} tasks to {filepath}")
             return filepath
-        except Exception as e:
+        except (OSError, TypeError, ValueError) as e:
             logger.error(f"Failed to export to JSON: {e}")
-            raise
+            raise DataTransferError(f"JSON export failed: {e}") from e
     
     @staticmethod
     def import_from_json(filepath: Path) -> List[Task]:
@@ -69,16 +73,17 @@ class DataExporter:
                 data = json.load(f)
             
             tasks = []
-            for task_data in data.get('tasks', []):
+            for raw_task_data in data.get('tasks', []):
+                task_data = dict(raw_task_data)
                 # Remove id to create new tasks on import
                 task_data.pop('id', None)
                 tasks.append(Task.from_dict(task_data))
             
             logger.info(f"Imported {len(tasks)} tasks from {filepath}")
             return tasks
-        except Exception as e:
+        except (OSError, TypeError, ValueError, json.JSONDecodeError) as e:
             logger.error(f"Failed to import from JSON: {e}")
-            raise
+            raise DataTransferError(f"JSON import failed: {e}") from e
     
     @staticmethod
     def export_to_csv(tasks: List[Task], filename: str = None) -> Path:
@@ -109,9 +114,9 @@ class DataExporter:
             
             logger.info(f"Exported {len(tasks)} tasks to {filepath}")
             return filepath
-        except Exception as e:
+        except (OSError, TypeError, ValueError) as e:
             logger.error(f"Failed to export to CSV: {e}")
-            raise
+            raise DataTransferError(f"CSV export failed: {e}") from e
     
     @staticmethod
     def import_from_csv(filepath: Path) -> List[Task]:
@@ -140,9 +145,9 @@ class DataExporter:
             
             logger.info(f"Imported {len(tasks)} tasks from {filepath}")
             return tasks
-        except Exception as e:
+        except (OSError, TypeError, ValueError, csv.Error) as e:
             logger.error(f"Failed to import from CSV: {e}")
-            raise
+            raise DataTransferError(f"CSV import failed: {e}") from e
     
     @staticmethod
     def create_backup(db_path: Path) -> Path:
@@ -163,9 +168,9 @@ class DataExporter:
             shutil.copy2(db_path, backup_path)
             logger.info(f"Created backup at {backup_path}")
             return backup_path
-        except Exception as e:
+        except OSError as e:
             logger.error(f"Failed to create backup: {e}")
-            raise
+            raise DataTransferError(f"Backup failed: {e}") from e
     
     @staticmethod
     def restore_backup(backup_path: Path, db_path: Path):
@@ -179,6 +184,6 @@ class DataExporter:
         try:
             shutil.copy2(backup_path, db_path)
             logger.info(f"Restored database from {backup_path}")
-        except Exception as e:
+        except OSError as e:
             logger.error(f"Failed to restore backup: {e}")
-            raise
+            raise DataTransferError(f"Restore failed: {e}") from e

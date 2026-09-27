@@ -26,7 +26,7 @@ def main():
         logger.info("Starting application main loop")
         root.mainloop()
         
-    except Exception as e:
+    except (tk.TclError, OSError) as e:
         logger.critical(f"Application crashed: {e}", exc_info=True)
         sys.exit(1)
 
