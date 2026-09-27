@@ -6,5 +6,5 @@ error boundaries in DataExporter and the application entry point; the tests
 cover the task model and database behavior.
 
 Pylint after-analysis was run locally with the documented command. Result:
-score 6.49/10 and 365 reported findings. The complete output is stored in
-Deliverable/pylint_after.txt.
+score 9.86/10 (previous run 9.86/10, +0.00 according to Pylint's local
+comparison). The complete output is stored in Deliverable/pylint_after.txt.

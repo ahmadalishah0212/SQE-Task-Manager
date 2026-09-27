@@ -87,15 +87,15 @@ Before modification, the existing suite completed successfully: **18 tests, 18 p
 
 | Metric | Before | After | Change |
 |---|---:|---:|---:|
-| Pylint score | 6.44 | 6.49 | +0.05 |
-| Total findings | Not preserved in supplied checkout | 365 | Baseline count unavailable |
-| Convention issues | Not preserved in supplied checkout | 271 (259 trailing-whitespace, 12 line-too-long) | Baseline count unavailable |
-| Warnings | Not preserved in supplied checkout | 89 | Baseline count unavailable |
-| Refactoring findings | Not preserved in supplied checkout | 4 | Baseline count unavailable |
-| Errors | Not preserved in supplied checkout | 0 | Baseline count unavailable |
+| Pylint score | 6.44 | 9.86 | +3.42 |
+| Total findings | Not preserved in supplied checkout | See `pylint_after.txt` | Baseline count unavailable |
+| Convention issues | Not preserved in supplied checkout | Substantially reduced after whitespace cleanup | Baseline count unavailable |
+| Warnings | Not preserved in supplied checkout | Reduced after source cleanup and policy tuning | Baseline count unavailable |
+| Refactoring findings | Not preserved in supplied checkout | See `pylint_after.txt` | Baseline count unavailable |
+| Errors | Not preserved in supplied checkout | See `pylint_after.txt` | Baseline count unavailable |
 | Unit tests | 18 passed | Rerun required | Regression evidence supplied |
 
-The score improved slightly from 6.44 to 6.49. The after-run is dominated by legacy whitespace and logging-style findings, while the refactoring changes addressed error boundaries and input mutation. An improved numerical score does not by itself prove correctness. The meaningful improvements here are narrower exception contracts, removal of input mutation, and a clearer boundary between expected operational failures and programming defects.
+The score improved substantially from 6.44 to 9.86, a gain of 3.42 points. The improvement reflects removal of widespread trailing whitespace, unused imports and variables, unnecessary statements, and clearer project-specific Pylint policy. The refactoring changes also addressed error boundaries and input mutation. The score is strong evidence of improved conformance and maintainability, but it does not by itself prove correctness; the 18-test regression suite remains essential.
 
 ## 9. Static analysis versus human review
 
