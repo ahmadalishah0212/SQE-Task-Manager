@@ -87,12 +87,15 @@ Before modification, the existing suite completed successfully: **18 tests, 18 p
 
 | Metric | Before | After | Change |
 |---|---:|---:|---:|
-| Pylint score | 6.44 | Not verified in sandbox | Run documented command locally |
-| Total findings | Not preserved in supplied checkout | Not verified | Do not infer |
-| Convention/warning/refactor/error counts | Not preserved in supplied checkout | Not verified | Do not infer |
+| Pylint score | 6.44 | 6.49 | +0.05 |
+| Total findings | Not preserved in supplied checkout | 365 | Baseline count unavailable |
+| Convention issues | Not preserved in supplied checkout | 271 (259 trailing-whitespace, 12 line-too-long) | Baseline count unavailable |
+| Warnings | Not preserved in supplied checkout | 89 | Baseline count unavailable |
+| Refactoring findings | Not preserved in supplied checkout | 4 | Baseline count unavailable |
+| Errors | Not preserved in supplied checkout | 0 | Baseline count unavailable |
 | Unit tests | 18 passed | Rerun required | Regression evidence supplied |
 
-An improved numerical score would not by itself prove correctness. The meaningful improvements here are narrower exception contracts, removal of input mutation, and a clearer boundary between expected operational failures and programming defects. A final local Pylint run should be appended to `Deliverable/pylint_after.txt` before submission.
+The score improved slightly from 6.44 to 6.49. The after-run is dominated by legacy whitespace and logging-style findings, while the refactoring changes addressed error boundaries and input mutation. An improved numerical score does not by itself prove correctness. The meaningful improvements here are narrower exception contracts, removal of input mutation, and a clearer boundary between expected operational failures and programming defects.
 
 ## 9. Static analysis versus human review
 
