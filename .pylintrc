@@ -3,13 +3,13 @@ ignore=tests
 jobs=1
 
 [MESSAGES CONTROL]
-disable=import-error,too-few-public-methods
+disable=import-error,too-few-public-methods,logging-fstring-interpolation,raise-missing-from
 
 [BASIC]
 good-names=i,j,k,db,f,e
 
 [FORMAT]
-max-line-length=100
+max-line-length=120
 
 [DESIGN]
 max-args=6

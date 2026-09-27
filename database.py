@@ -5,7 +5,7 @@ import sqlite3
 import logging
 from contextlib import contextmanager
 from datetime import datetime
-from typing import List, Optional, Tuple
+from typing import List, Optional
 from pathlib import Path
 
 from models.task import Task
@@ -17,21 +17,20 @@ logger = logging.getLogger("TaskManager.Database")
 
 class DatabaseError(Exception):
     """Custom exception for database operations."""
-    pass
 
 
 class TaskDatabase:
     """
-    Enhanced database manager with context manager support, 
+    Enhanced database manager with context manager support,
     migrations, and comprehensive error handling.
     """
-    
+
     VERSION = 2  # Database schema version
-    
+
     def __init__(self, db_file: Optional[str] = None):
         """
         Initialize database connection.
-        
+
         Args:
             db_file: Path to database file. If None, uses default from settings.
         """
@@ -40,7 +39,7 @@ class TaskDatabase:
         self._connect()
         self._initialize_database()
         logger.info(f"Database initialized at {self.db_path}")
-    
+
     def _connect(self):
         """Establish database connection."""
         try:
@@ -52,12 +51,12 @@ class TaskDatabase:
         except sqlite3.Error as e:
             logger.error(f"Failed to connect to database: {e}")
             raise DatabaseError(f"Database connection failed: {e}")
-    
+
     def _initialize_database(self):
         """Initialize database with schema and migrations."""
         self._create_version_table()
         current_version = self._get_version()
-        
+
         if current_version == 0:
             # New database
             self._create_initial_schema()
@@ -65,7 +64,7 @@ class TaskDatabase:
         elif current_version < self.VERSION:
             # Run migrations
             self._run_migrations(current_version)
-    
+
     def _create_version_table(self):
         """Create version tracking table."""
         try:
@@ -80,7 +79,7 @@ class TaskDatabase:
         except sqlite3.Error as e:
             logger.error(f"Failed to create version table: {e}")
             raise DatabaseError(f"Version table creation failed: {e}")
-    
+
     def _get_version(self) -> int:
         """Get current database schema version."""
         try:
@@ -90,7 +89,7 @@ class TaskDatabase:
             return row[0] if row[0] is not None else 0
         except sqlite3.Error:
             return 0
-    
+
     def _set_version(self, version: int):
         """Set database schema version."""
         try:
@@ -104,12 +103,12 @@ class TaskDatabase:
         except sqlite3.Error as e:
             logger.error(f"Failed to set version: {e}")
             raise DatabaseError(f"Version update failed: {e}")
-    
+
     def _create_initial_schema(self):
         """Create initial database schema."""
         try:
             cursor = self.connection.cursor()
-            
+
             # Categories table
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS categories (
@@ -118,7 +117,7 @@ class TaskDatabase:
                     description TEXT
                 )
             ''')
-            
+
             # Tasks table with enhanced fields
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS tasks (
@@ -136,13 +135,13 @@ class TaskDatabase:
                         ON DELETE SET DEFAULT
                 )
             ''')
-            
+
             # Insert default category
             cursor.execute(
                 "INSERT OR IGNORE INTO categories (name, description) VALUES (?, ?)",
                 ("General", "Default category for uncategorized tasks")
             )
-            
+
             # Create indexes for better performance
             cursor.execute(
                 "CREATE INDEX IF NOT EXISTS idx_tasks_completed ON tasks(completed)"
@@ -156,34 +155,34 @@ class TaskDatabase:
             cursor.execute(
                 "CREATE INDEX IF NOT EXISTS idx_tasks_priority ON tasks(priority)"
             )
-            
+
             self.connection.commit()
             logger.info("Initial database schema created")
         except sqlite3.Error as e:
             logger.error(f"Failed to create initial schema: {e}")
             raise DatabaseError(f"Schema creation failed: {e}")
-    
+
     def _run_migrations(self, from_version: int):
         """Run database migrations."""
         logger.info(f"Running migrations from version {from_version} to {self.VERSION}")
-        
+
         if from_version < 2:
             self._migrate_v1_to_v2()
-        
+
         self._set_version(self.VERSION)
-    
+
     def _migrate_v1_to_v2(self):
         """Migrate from version 1 to version 2 (add new fields)."""
         try:
             cursor = self.connection.cursor()
-            
+
             # Check if old schema exists and migrate
             cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='tasks'")
             if cursor.fetchone():
                 # Get existing columns
                 cursor.execute("PRAGMA table_info(tasks)")
                 columns = [row[1] for row in cursor.fetchall()]
-                
+
                 # Add new columns if they don't exist
                 if 'priority' not in columns:
                     cursor.execute("ALTER TABLE tasks ADD COLUMN priority TEXT DEFAULT 'Medium'")
@@ -206,7 +205,7 @@ class TaskDatabase:
                     )
                 if 'completed_at' not in columns:
                     cursor.execute("ALTER TABLE tasks ADD COLUMN completed_at TEXT")
-            
+
             # Create categories table if it doesn't exist
             cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='categories'")
             if not cursor.fetchone():
@@ -221,13 +220,13 @@ class TaskDatabase:
                     "INSERT INTO categories (name, description) VALUES (?, ?)",
                     ("General", "Default category for uncategorized tasks")
                 )
-            
+
             self.connection.commit()
             logger.info("Migration to v2 completed")
         except sqlite3.Error as e:
             logger.error(f"Migration failed: {e}")
             raise DatabaseError(f"Migration to v2 failed: {e}")
-    
+
     @contextmanager
     def transaction(self):
         """Context manager for database transactions."""
@@ -239,14 +238,14 @@ class TaskDatabase:
             self.connection.rollback()
             logger.error(f"Transaction rolled back: {e}")
             raise DatabaseError(f"Transaction failed: {e}")
-    
+
     def insert_task(self, task: Task) -> int:
         """
         Insert a new task into the database.
-        
+
         Args:
             task: Task object to insert
-            
+
         Returns:
             ID of the inserted task
         """
@@ -256,7 +255,7 @@ class TaskDatabase:
                 now = datetime.now().isoformat()
                 cursor.execute('''
                     INSERT INTO tasks (
-                        description, priority, category, due_date, 
+                        description, priority, category, due_date,
                         completed, created_at, updated_at
                     ) VALUES (?, ?, ?, ?, ?, ?, ?)
                 ''', (
@@ -274,23 +273,23 @@ class TaskDatabase:
         except sqlite3.Error as e:
             logger.error(f"Failed to insert task: {e}")
             raise DatabaseError(f"Failed to insert task: {e}")
-    
+
     def update_task(self, task: Task):
         """
         Update an existing task.
-        
+
         Args:
             task: Task object with updated data
         """
         if task.id is None:
             raise ValueError("Cannot update task without ID")
-        
+
         try:
             with self.transaction() as conn:
                 cursor = conn.cursor()
                 cursor.execute('''
-                    UPDATE tasks 
-                    SET description = ?, priority = ?, category = ?, 
+                    UPDATE tasks
+                    SET description = ?, priority = ?, category = ?,
                         due_date = ?, completed = ?, updated_at = ?
                     WHERE id = ?
                 ''', (
@@ -308,7 +307,7 @@ class TaskDatabase:
         except sqlite3.Error as e:
             logger.error(f"Failed to update task: {e}")
             raise DatabaseError(f"Failed to update task: {e}")
-    
+
     def get_task_by_id(self, task_id: int) -> Optional[Task]:
         """Get a task by its ID."""
         try:
@@ -324,14 +323,14 @@ class TaskDatabase:
         except sqlite3.Error as e:
             logger.error(f"Failed to get task: {e}")
             raise DatabaseError(f"Failed to get task: {e}")
-    
+
     def get_all_tasks(self, include_completed: bool = False) -> List[Task]:
         """
         Get all tasks, optionally including completed ones.
-        
+
         Args:
             include_completed: Whether to include completed tasks
-            
+
         Returns:
             List of Task objects
         """
@@ -347,7 +346,7 @@ class TaskDatabase:
         except sqlite3.Error as e:
             logger.error(f"Failed to get tasks: {e}")
             raise DatabaseError(f"Failed to get tasks: {e}")
-    
+
     def get_completed_tasks(self) -> List[Task]:
         """Get all completed tasks."""
         try:
@@ -359,7 +358,7 @@ class TaskDatabase:
         except sqlite3.Error as e:
             logger.error(f"Failed to get completed tasks: {e}")
             raise DatabaseError(f"Failed to get completed tasks: {e}")
-    
+
     def get_tasks_by_category(self, category: str) -> List[Task]:
         """Get all tasks in a specific category."""
         try:
@@ -372,7 +371,7 @@ class TaskDatabase:
         except sqlite3.Error as e:
             logger.error(f"Failed to get tasks by category: {e}")
             raise DatabaseError(f"Failed to get tasks by category: {e}")
-    
+
     def get_tasks_by_priority(self, priority: str) -> List[Task]:
         """Get all tasks with a specific priority."""
         try:
@@ -385,14 +384,14 @@ class TaskDatabase:
         except sqlite3.Error as e:
             logger.error(f"Failed to get tasks by priority: {e}")
             raise DatabaseError(f"Failed to get tasks by priority: {e}")
-    
+
     def search_tasks(self, query: str) -> List[Task]:
         """
         Search tasks by description.
-        
+
         Args:
             query: Search query string
-            
+
         Returns:
             List of matching tasks
         """
@@ -406,14 +405,14 @@ class TaskDatabase:
         except sqlite3.Error as e:
             logger.error(f"Failed to search tasks: {e}")
             raise DatabaseError(f"Failed to search tasks: {e}")
-    
+
     def mark_task_complete(self, task_id: int):
         """Mark a task as completed."""
         try:
             with self.transaction() as conn:
                 cursor = conn.cursor()
                 cursor.execute('''
-                    UPDATE tasks 
+                    UPDATE tasks
                     SET completed = 1, completed_at = ?, updated_at = ?
                     WHERE id = ?
                 ''', (datetime.now().isoformat(), datetime.now().isoformat(), task_id))
@@ -423,14 +422,14 @@ class TaskDatabase:
         except sqlite3.Error as e:
             logger.error(f"Failed to mark task complete: {e}")
             raise DatabaseError(f"Failed to mark task complete: {e}")
-    
+
     def mark_task_incomplete(self, task_id: int):
         """Mark a task as incomplete."""
         try:
             with self.transaction() as conn:
                 cursor = conn.cursor()
                 cursor.execute('''
-                    UPDATE tasks 
+                    UPDATE tasks
                     SET completed = 0, completed_at = NULL, updated_at = ?
                     WHERE id = ?
                 ''', (datetime.now().isoformat(), task_id))
@@ -440,7 +439,7 @@ class TaskDatabase:
         except sqlite3.Error as e:
             logger.error(f"Failed to mark task incomplete: {e}")
             raise DatabaseError(f"Failed to mark task incomplete: {e}")
-    
+
     def delete_task(self, task_id: int):
         """Delete a task."""
         try:
@@ -453,9 +452,9 @@ class TaskDatabase:
         except sqlite3.Error as e:
             logger.error(f"Failed to delete task: {e}")
             raise DatabaseError(f"Failed to delete task: {e}")
-    
+
     # Category operations
-    
+
     def insert_category(self, category: Category) -> int:
         """Insert a new category."""
         try:
@@ -472,7 +471,7 @@ class TaskDatabase:
         except sqlite3.Error as e:
             logger.error(f"Failed to insert category: {e}")
             raise DatabaseError(f"Failed to insert category: {e}")
-    
+
     def get_all_categories(self) -> List[Category]:
         """Get all categories."""
         try:
@@ -482,12 +481,12 @@ class TaskDatabase:
         except sqlite3.Error as e:
             logger.error(f"Failed to get categories: {e}")
             raise DatabaseError(f"Failed to get categories: {e}")
-    
+
     def delete_category(self, category_name: str):
         """Delete a category (tasks will be moved to General)."""
         if category_name == "General":
             raise ValueError("Cannot delete the General category")
-        
+
         try:
             with self.transaction() as conn:
                 cursor = conn.cursor()
@@ -498,48 +497,48 @@ class TaskDatabase:
         except sqlite3.Error as e:
             logger.error(f"Failed to delete category: {e}")
             raise DatabaseError(f"Failed to delete category: {e}")
-    
+
     def get_task_statistics(self) -> dict:
         """Get statistics about tasks."""
         try:
             cursor = self.connection.cursor()
-            
+
             # Total tasks
             cursor.execute("SELECT COUNT(*) FROM tasks")
             total = cursor.fetchone()[0]
-            
+
             # Completed tasks
             cursor.execute("SELECT COUNT(*) FROM tasks WHERE completed = 1")
             completed = cursor.fetchone()[0]
-            
+
             # Tasks by priority
             cursor.execute("""
-                SELECT priority, COUNT(*) 
-                FROM tasks 
-                WHERE completed = 0 
+                SELECT priority, COUNT(*)
+                FROM tasks
+                WHERE completed = 0
                 GROUP BY priority
             """)
             by_priority = dict(cursor.fetchall())
-            
+
             # Tasks by category
             cursor.execute("""
-                SELECT category, COUNT(*) 
-                FROM tasks 
-                WHERE completed = 0 
+                SELECT category, COUNT(*)
+                FROM tasks
+                WHERE completed = 0
                 GROUP BY category
             """)
             by_category = dict(cursor.fetchall())
-            
+
             # Overdue tasks
             cursor.execute("""
-                SELECT COUNT(*) 
-                FROM tasks 
-                WHERE completed = 0 
-                AND due_date IS NOT NULL 
+                SELECT COUNT(*)
+                FROM tasks
+                WHERE completed = 0
+                AND due_date IS NOT NULL
                 AND date(due_date) < date('now')
             """)
             overdue = cursor.fetchone()[0]
-            
+
             return {
                 'total': total,
                 'completed': completed,
@@ -551,7 +550,7 @@ class TaskDatabase:
         except sqlite3.Error as e:
             logger.error(f"Failed to get statistics: {e}")
             raise DatabaseError(f"Failed to get statistics: {e}")
-    
+
     def close(self):
         """Close the database connection."""
         if self.connection:

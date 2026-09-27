@@ -22,87 +22,87 @@ class DataTransferError(Exception):
 
 class DataExporter:
     """Handle data export/import operations."""
-    
+
     @staticmethod
     def export_to_json(tasks: List[Task], filename: str = None) -> Path:
         """
         Export tasks to JSON file.
-        
+
         Args:
             tasks: List of tasks to export
             filename: Optional filename, auto-generated if not provided
-            
+
         Returns:
             Path to the exported file
         """
         if filename is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"tasks_export_{timestamp}.json"
-        
+
         filepath = Settings.EXPORT_DIR / filename
-        
+
         try:
             data = {
                 'exported_at': datetime.now().isoformat(),
                 'task_count': len(tasks),
                 'tasks': [task.to_dict() for task in tasks]
             }
-            
+
             with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
-            
+
             logger.info(f"Exported {len(tasks)} tasks to {filepath}")
             return filepath
         except (OSError, TypeError, ValueError) as e:
             logger.error(f"Failed to export to JSON: {e}")
             raise DataTransferError(f"JSON export failed: {e}") from e
-    
+
     @staticmethod
     def import_from_json(filepath: Path) -> List[Task]:
         """
         Import tasks from JSON file.
-        
+
         Args:
             filepath: Path to JSON file
-            
+
         Returns:
             List of imported tasks
         """
         try:
             with open(filepath, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-            
+
             tasks = []
             for raw_task_data in data.get('tasks', []):
                 task_data = dict(raw_task_data)
                 # Remove id to create new tasks on import
                 task_data.pop('id', None)
                 tasks.append(Task.from_dict(task_data))
-            
+
             logger.info(f"Imported {len(tasks)} tasks from {filepath}")
             return tasks
         except (OSError, TypeError, ValueError, json.JSONDecodeError) as e:
             logger.error(f"Failed to import from JSON: {e}")
             raise DataTransferError(f"JSON import failed: {e}") from e
-    
+
     @staticmethod
     def export_to_csv(tasks: List[Task], filename: str = None) -> Path:
         """
         Export tasks to CSV file.
-        
+
         Args:
             tasks: List of tasks to export
             filename: Optional filename, auto-generated if not provided
-            
+
         Returns:
             Path to the exported file
         """
         if filename is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"tasks_export_{timestamp}.csv"
-        
+
         filepath = Settings.EXPORT_DIR / filename
-        
+
         try:
             with open(filepath, 'w', newline='', encoding='utf-8') as f:
                 if tasks:
@@ -111,21 +111,21 @@ class DataExporter:
                     writer.writeheader()
                     for task in tasks:
                         writer.writerow(task.to_dict())
-            
+
             logger.info(f"Exported {len(tasks)} tasks to {filepath}")
             return filepath
         except (OSError, TypeError, ValueError) as e:
             logger.error(f"Failed to export to CSV: {e}")
             raise DataTransferError(f"CSV export failed: {e}") from e
-    
+
     @staticmethod
     def import_from_csv(filepath: Path) -> List[Task]:
         """
         Import tasks from CSV file.
-        
+
         Args:
             filepath: Path to CSV file
-            
+
         Returns:
             List of imported tasks
         """
@@ -142,28 +142,28 @@ class DataExporter:
                         if row[key] in ('None', 'null', ''):
                             row[key] = None
                     tasks.append(Task.from_dict(row))
-            
+
             logger.info(f"Imported {len(tasks)} tasks from {filepath}")
             return tasks
         except (OSError, TypeError, ValueError, csv.Error) as e:
             logger.error(f"Failed to import from CSV: {e}")
             raise DataTransferError(f"CSV import failed: {e}") from e
-    
+
     @staticmethod
     def create_backup(db_path: Path) -> Path:
         """
         Create a backup of the database file.
-        
+
         Args:
             db_path: Path to database file
-            
+
         Returns:
             Path to backup file
         """
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         backup_filename = f"tasks_backup_{timestamp}.db"
         backup_path = Settings.BACKUP_DIR / backup_filename
-        
+
         try:
             shutil.copy2(db_path, backup_path)
             logger.info(f"Created backup at {backup_path}")
@@ -171,12 +171,12 @@ class DataExporter:
         except OSError as e:
             logger.error(f"Failed to create backup: {e}")
             raise DataTransferError(f"Backup failed: {e}") from e
-    
+
     @staticmethod
     def restore_backup(backup_path: Path, db_path: Path):
         """
         Restore database from a backup file.
-        
+
         Args:
             backup_path: Path to backup file
             db_path: Path where database should be restored

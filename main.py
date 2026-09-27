@@ -7,7 +7,6 @@ import logging
 import sys
 
 from views.main_window import TaskManagerApp
-from config.settings import Settings
 
 # Setup logging
 logger = logging.getLogger("TaskManager")
@@ -18,14 +17,14 @@ def main():
     try:
         # Create root window
         root = tk.Tk()
-        
+
         # Create application
-        app = TaskManagerApp(root)
-        
+        TaskManagerApp(root)
+
         # Start main loop
         logger.info("Starting application main loop")
         root.mainloop()
-        
+
     except (tk.TclError, OSError) as e:
         logger.critical(f"Application crashed: {e}", exc_info=True)
         sys.exit(1)
