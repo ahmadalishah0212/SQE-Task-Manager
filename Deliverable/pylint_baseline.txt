@@ -1,0 +1,9 @@
+Baseline source: Deliverable 1.md and the selection-assignment record.
+
+Initial Pylint score: 6.44/10.00
+The original complete Pylint console output was not committed in the supplied
+repository. Reproduce it with:
+  python -m pylint --rcfile=.pylintrc . > Deliverable/pylint_after.txt
+
+This report does not invent a count of findings that is not present in the
+repository. The score above is preserved as the baseline metric from D1.

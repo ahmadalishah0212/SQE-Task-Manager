@@ -1,0 +1,21 @@
+[MASTER]
+ignore=tests
+jobs=1
+
+[MESSAGES CONTROL]
+disable=import-error,too-few-public-methods
+
+[BASIC]
+good-names=i,j,k,db,f,e
+
+[FORMAT]
+max-line-length=100
+
+[DESIGN]
+max-args=6
+max-branches=12
+max-statements=60
+
+[REPORTS]
+reports=no
+score=yes

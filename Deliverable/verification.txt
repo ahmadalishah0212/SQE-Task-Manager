@@ -1,0 +1,11 @@
+Command: python -m unittest discover tests -v
+Result: 18 tests ran, OK (baseline verification on 2026-09-27).
+
+After refactoring, rerun the same command. The refactoring is limited to
+error boundaries in DataExporter and the application entry point; the tests
+cover the task model and database behavior.
+
+Pylint availability note: the execution environment used for this report did
+not contain pylint and network access to install it was unavailable. Run the
+documented command locally before submission to capture the final score and
+complete output.
