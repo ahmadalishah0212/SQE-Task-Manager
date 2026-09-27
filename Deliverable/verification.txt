@@ -5,6 +5,9 @@ After refactoring, rerun the same command. The refactoring is limited to
 error boundaries in DataExporter and the application entry point; the tests
 cover the task model and database behavior.
 
-Pylint after-analysis was run locally with the documented command. Result:
-score 9.86/10 (previous run 9.86/10, +0.00 according to Pylint's local
-comparison). The complete output is stored in Deliverable/pylint_after.txt.
+Pylint baseline was reconstructed from commit c2181aa using the same
+.pylintrc: 7.30/10 with 281 findings (260 convention, 17 warnings, 4
+refactoring, 0 errors). Pylint after-analysis was run locally with the same
+command: 9.86/10 with 15 findings (1 convention, 10 warnings, 4
+refactoring, 0 errors). Complete outputs are stored in
+Deliverable/pylint_baseline_original.txt and Deliverable/pylint_after.txt.
